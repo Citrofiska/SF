@@ -5,9 +5,9 @@ s.plotTree;
 /////// second argument: port that app is listening on
 /////// If don't send data to that app, the following is not needed
 (
-~computer = NetAddr.new("192.168.31.26", 57120);
-~ipad = NetAddr.new("192.168.31.55", 8000) ;
-~phone = NetAddr.new("192.168.31.166", 8001) ;
+~computer = NetAddr.new("", 57120);
+~ipad = NetAddr.new("", 8000) ;
+~phone = NetAddr.new("", 8001) ;
 )
 
 thisProcess.openUDPPort(9000); // Open a new UDP port for a second device. will return true or false.
@@ -27,7 +27,7 @@ SynthDef("bubbles", { |out|
 ///////////////////// read audio files from a folder /////////////////////////////////
 (
 
-~folder_path = "D:/Audio/genres_original/jazz/";
+~folder_path = "D:/samples";
 ~audios = Array.new;
 ~folder = PathName.new(~folder_path);
 
@@ -51,7 +51,7 @@ SynthDef(\playbuf, {
 }).add;
 
 ////x = Synth.new(\playbuf, [\buf,~audios[0].bufnum]);
-y = Synth.new(\playbuf, [\buf,~audios[4].bufnum]);
+y = Synth.new(\playbuf, [\buf,~audios[1].bufnum]);
 )
 
 ////////////////////////////// receive osc /////////////////////////////
