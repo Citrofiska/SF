@@ -1,0 +1,75 @@
+> SOUND FOREST
+
+The basic Sound Forest (SF) software system consists of 3 parts:
+1) Analysis of the contact mic audio.
+2) Serial contact with the Arduino and OSC conversion of incoming data
+3) OSC to DMX allowing control over the string light
+
+These three parts are separate software systems that all allow a fourth part, the piece itself, to interact with the SF hardware.
+
+
+> 1 AUDIO ANALYSIS [startup.scd.bak]
+Written in SuperCollider. Designed to replace the start up sequence of SuperCollider itself. Easiest to install by opening the source file, copying the contents and pasting it into the startup file of SuperCollider. The startup file is found by the menu option "File > Open startup file". 
+
+Outputs and array of data to:
+127.0.0.1:9001 - /string[1,2,3,4,5]/data Array[amplitude, spectral Flatness, spectral centroid, has freq, freq, midi]
+
+> 2 RANGE FINDER ARDUINO COMMUNICATION AND OSC BRIDGE [sound-forest.arduino-osc.py]
+Written in Python using native serial communication but relies on the OSC.py file for OSC. Reads data from an Arduino (running [sound-forest-arduino.ino]) connected to a PING ultrasonic range finder.
+
+Outputs:
+127.0.0.1:9001 - /string[1,2,3,4,5]/distance/
+
+
+> 3 OSC TO DMX [sound-forest-osc-dmx.py]
+Written in Python using native serial communication but relies on the OSC.py file for OSC. 
+
+Listens to:
+127.0.0.1:9000 - /string[1,2,3,4,5]/[r,g,b,w] 0-127		>>[Actually should be 0-255]<<
+
+Example, set string 3 green componen to full power:
+/string3/g 127
+
+Example, set string 2 red component to half power.
+/string2/r 64
+
+
+--------------------------------------------------------------------------------------------------------
+
+
+>>> HOW TO MAKE EVERYTHING WORK
+- Open terminal and go to sound-forest/ folder
+– Launch 'python start-sound-forest.py'
+	This will launch: the osc script, the arduino script, the dmx script and SuperCollider (with the startup file for receiving data from the contact mic).
+
+- In order to work with the speakers in the floor and in the ceiling, don't forget to set the correct audio channels in SuperCollider (and reboot).
+
+
+--------------------------------------------------------------------------------------------------------
+
+
+>>> KNOWN ISSUES
+- On macOS Mojave the arduino port is often not correctly seen.
+	Try to fix it following these instructions (that have been found here https://forum.arduino.cc/index.php?topic=570440.0):
+
+	1.- Obtain the file CH34x_Install_V1.4.pkg using the link: http://www.wch.cn/downloads/file/178.html
+	2.- Remove the old driver by issuing one of the following commands (depending on your installation):
+		sudo rm -rf /System/Library/Extensions/usb.kext
+      	sudo rm -rf /Library/Extensions/usbserial.kext
+	3.- Restart your Mac.
+	4.- Open the ZIP file and double click on the file CH34x_Install_V1.4.pkg.
+	5.- Restart your Mac. (Maybe you have to restart it more than once)
+
+- If the Mac cannot find the serial port where Arduino is connected, check in [start-sound-forest.py] if the serial-port has the correct number.
+
+- If the terminal is saying the the port is already busy, this means that the python script has not been previously properly quitted.
+	One solution is (on Mac) to open Activity Manager, find the python processes and close them.
+	Another solution from terminal is to list all the processes:
+		lsof -i
+	Then find the PID of python and kill it:
+		sudo kill *PID*
+
+
+
+
+Last update: 2019-04-09

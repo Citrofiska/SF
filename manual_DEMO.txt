@@ -1,0 +1,27 @@
+> SOUND FOREST DEMO
+
+Claudio Panariello
+claudiop[at]kth[dot]se
+
+Last update: 2019-04-09
+
+
+This Sound Forest Demo uses all the functionalities, i.e. arduino with ultrasonic range finder, contact mic, dmx, haptic floor and ceiling speaker.
+
+
+--------------------------------------------------------------------------------------------------------
+
+
+>>> HOW TO MAKE EVERYTHING WORK
+- Open terminal and launch 'python start-sound-forest.py'
+	This will launch: the osc script, the arduino script, the dmx script and SuperCollider with the startup.
+
+In SuperCollider startup there is everything is needed to start the DEMO. Make sure you copied the content of the startup in the SC startup file.
+
+
+--------------------------------------------------------------------------------------------------------
+
+
+DIFFERENCES IN THE STARTUP USED FOR THIS DEMO
+
+The only difference between this startup file and the one normally provided with Sound Forest is in the way it sends the onsets.
