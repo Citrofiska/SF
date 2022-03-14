@@ -5,10 +5,60 @@ s.plotTree;
 /////// second argument: port that app is listening on
 /////// If don't send data to that app, the following is not needed
 (
-~computer = NetAddr.new("", 57120);
-~ipad = NetAddr.new("", 8000) ;
-~phone = NetAddr.new("", 8001) ;
+//~computer = NetAddr.new("192.168.0.109", 57120);
+~phone1 = NetAddr.new("192.168.0.109", 8001);
+~ngimu = NetAddr.new("192.168.0.109", 8002);
+~iPad = NetAddr.new("192.168.0.109", 8003);
 )
+
+
+~phone2.disconnect
+~phone.disconnect
+
+OSCFunc.trace(true)
+
+
+OSCFunc({|msg| msg.postln}, '/oscControl/slider1', recvPort:8001);
+OSCFunc({|msg| msg.postln}, '/sensors', recvPort:8002);
+
+//////////////////////////////////////////////////
+////////////////////////////////////////
+// TEST CONNECTION NGIMU TO DMX
+(
+~dmx = NetAddr.new("127.0.0.1", 9000);    // create the NetAddr
+~arduino = NetAddr.new("127.0.0.1", 9001);    // create the NetAddr
+
+// Reset colors to zero
+~dmx.sendMsg("/string1/r", 0);
+~dmx.sendMsg("/string1/g", 0);
+~dmx.sendMsg("/string1/b", 0);
+~dmx.sendMsg("/string1/w", 0);
+)
+
+
+(
+OSCFunc({|msg|
+	~dmx.sendMsg("/string1/r", (msg[1].value.abs).asInt.linlin(0, 2, 0, 25))
+	//msg[2].postln
+
+}, '/sensors', recvPort:8002);
+)
+
+
+(
+OSCFunc({|msg|
+	~ping = msg[1].value;
+	~ping.postln;
+}, '/string0/distance', recvPort:9001);
+)
+
+
+OSCFunc({|msg| ~dmx.sendMsg("/string1/r", (msg[3].value).asInt); }, '/red');
+
+
+OSCFunc({|msg| ~onset = msg[3].value; ~onset.postln;}, '/onset'); //onsets
+
+
 
 thisProcess.openUDPPort(9000); // Open a new UDP port for a second device. will return true or false.
 thisProcess.openPorts; // returns all open ports (Default port is 57120)
