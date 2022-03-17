@@ -6,12 +6,8 @@ s.plotTree;
 
 ////////////////////////// INITIAL SETTINGS ////////////////////////
 
-
-
 ~ip = "192.168.0.109"; //"192.168.0.109"
 ~sample_path = "/Users/ljudskogen/Xu_Anna/samples/";
-
-
 
 ~phone_port = 8001;
 
@@ -26,17 +22,19 @@ s.plotTree;
 
 /// OSCFunc.trace(false)
 
+///onset or onsets?
+OSCFunc({|msg| ~onset = msg[3].value.postln; ~onset;}, '/onset'); //onset
+
 //arduino sensor data
-// ~ping = 0;
-// OSCFunc({|msg| ~ping = msg[1].value; }, '/string0/distance', recvPort:9001);
+~ping = 0;
+OSCFunc({|msg| ~ping = msg[1].value; }, '/string0/distance', recvPort:9001);
+
 //
 // // contact mic data
 // ~onset = 0;
 //OSCFunc({|msg| ~onset = msg[3].value.postln;}, '/onsets'); //onsets
 //
-//
-// //onset or onsets?
-//OSCFunc({|msg| ~onset = msg[3].value.postln; ~onset;}, '/onset'); //onsets
+
 //
 // Task({
 // 	inf.do({
@@ -50,12 +48,6 @@ s.plotTree;
 // 		0.01.wait;
 // 	});
 // }).start;
-
-
-
-
-
-
 
 
 ///////////// OscController TO DMX /////////////////////////////////
@@ -106,6 +98,14 @@ SynthDef(\playbuf, {
 
 
 ////////////// button to trigger audio samples ////////////////////////
+
+OSCFunc({|msg|
+	if(msg[1] == 1.0, {
+	    s.freeAll
+	});
+}, '/oscControl/freeAll', recvPort:~phone_port);
+
+
 OSCFunc({|msg|
 	if(msg[1] == 1.0, {
 	    ~a0 = Synth.new(\playbuf, [\buf,~audios[0].bufnum])
@@ -114,12 +114,6 @@ OSCFunc({|msg|
 	    ~a0.free;
 	});
 }, '/oscControl/default', recvPort:~phone_port);
-
-OSCFunc({|msg|
-	if(msg[1] == 1.0, {
-	    s.freeAll
-	});
-}, '/oscControl/freeAll', recvPort:~phone_port);
 
 OSCFunc({|msg|
 	if(msg[1] == 1.0, {
@@ -249,33 +243,41 @@ OSCFunc({|msg|
 }, '/oscControl/gridToggle14', recvPort:~phone_port);
 
 
+///////////////////////// THIS WOULD HOPEFULLY REPLACE THE HARDCODED STUFF
+~nbrToggles = 14;
+~synths = Array.fill(~nbrToggles, {arg i; ('/oscControl/gridToggle'++i).postln});
+~actives = Array.fill(~nbrToggles, {arg i; i *1 }).postln;
 
-/*OSCFunc({|msg|
-	~active = 1
-	if(msg[1] == 1.0 && ~active, {
-		~synths[i] = Synth.new(\playbuf, [\buf,~audios[i].bufnum]);
-		~active == 0;
-	});
-	if(msg[1] == 0.0, {
-	    ~a14.free;
-		~active == 1;
-	});
-}, '/oscControl/gridToggle'++i, recvPort:~phone_port);*/
 
-//onset
 OSCFunc({|msg|
-	if(onset > 0, {
-		~a15 = Synth.new(\playbuf, [\buf,~audios[15].bufnum]);
-		});
-	//0.1.wait;
+	if(msg[1] == 1.0 && ~actives[i] ==1, {
+~synths[i] = Synth.new(\playbuf, [\buf,~audios[i].bufnum]);
+		~actives[i] == 0;
+});
+if(msg[1] == 0.0, {
+		~synths[i].free;
+		~actives[i] == 1;
+});
+}, '/oscControl/gridToggle'++i, recvPort:~phone_port);
 
-	  ~a15.free;
 
-}, '/onset');
+//while
+~nbrToggles = 14;
+OSCFunc({|msg|
+	if(~onset > 0, {	(
+i = 0;
+while ( { i < ~nbrToggles }, { i = i + 1; '~a'++i.free });
+)})}, '/onset');
 
 
+// for
+~nbrToggles = 14;
+OSCFunc({|msg|
+	if(~onset > 0, {	(
+for (0, ~nbrToggles-1, { arg i; '~a'++i.free.postln });
+)}
+)}, '/onset');
 
-//~synths = Array.fill(14, {arg i; ('/oscControl/gridToggle'++i).postln})
 
 
 
