@@ -1,5 +1,5 @@
 ////////////////////////// ONSETS DETECTION ////////////////////////
-//s.boot;
+s.boot;
 s.plotTree;
 
 // remember to run normal_startup.scd
@@ -243,15 +243,49 @@ OSCFunc({|msg|
 }, '/oscControl/gridToggle14', recvPort:~phone_port);
 
 
+
+///////////////
+
+~ip = "192.168.0.3"; //"192.168.0.109"
+//~sample_path = "/Users/ljudskogen/Xu_Anna/samples/";
+~phone_port = 8001;
+~phone = NetAddr.new(~ip, ~phone_port);
 ///////////////////////// THIS WOULD HOPEFULLY REPLACE THE HARDCODED STUFF
-~nbrToggles = 14;
+
+~sample_path = "/Users/annaanna/KTH/Sound_DT2300/project/samples/DONE/";
+~audios = Array.new;
+~folder = PathName.new(~sample_path);
+~folder.entries.do({
+	arg path;
+	~audios = ~audios.add(Buffer.read(s, path.fullPath));
+});
+
+SynthDef(\playbuf, {
+	arg amp=1, out=1, buf, rate=1,  trig=0, start=0, loop=1, da=2;
+	var sig;
+	// changed from 1--> 2 stereo
+	sig = PlayBuf.ar(2, buf, BufRateScale.kr(buf) * rate, trig, start, loop);
+	//// channel has to be fixed as integer.
+	//// buf: the index of the buffer to use.
+	//// rate: the sample rate(negative means reading backwards)
+	//// trig, start: enable playing the file from a specific time
+	//// loop: play the audio in loop
+	//// doneAction: free the buffer when it ends. Will be ignored if loop=1
+	sig = sig * amp;
+	Out.ar(out,sig!2);
+}).add;
+
+
+~nbrToggles = 4;
 ~synths = Array.fill(~nbrToggles, {arg i; ('/oscControl/gridToggle'++i).postln});
-~actives = Array.fill(~nbrToggles, {arg i; i *1 }).postln;
+~actives = Array.fill(~nbrToggles, {arg i; 1 }).postln;
 
-
+ i= 1;
 OSCFunc({|msg|
-	if(msg[1] == 1.0 && ~actives[i] ==1, {
-~synths[i] = Synth.new(\playbuf, [\buf,~audios[i].bufnum]);
+	x = msg[1].postln;
+	//~actives[i]
+	if(x == 1.0 && ~actives[i] == 1, {
+~synths[i] = Synth.new(\playbuf, [\buf,~audios[i].bufnum]).postln;
 		~actives[i] == 0;
 });
 if(msg[1] == 0.0, {
